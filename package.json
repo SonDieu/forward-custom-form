@@ -1,0 +1,13 @@
+{
+  "name": "cpform",
+  "version": "1.0.0",
+  "description": "copy custom form",
+  "main": "index.js",
+  "author": "sdieu@skedulo.com",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "inquirer": "^7.1.0",
+    "lodash": "^4.17.15"
+  }
+}
