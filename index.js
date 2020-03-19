@@ -1,9 +1,12 @@
 const inquirer = require("inquirer") // https://github.com/SBoudrias/Inquirer.js#question
 const _axios = require("axios")
 const _ = require("lodash")
+const path = require('path') 
+const fs = require('fs');
+const util = require('util');
 let instance = null;
 
-const defaultToken = `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlEwWXdOekF5UTBFME1UTXdRa05FTWpWQ05rRTVSRFUxTURoRk16TXhNa1kyTVRFelFVSkJRUSJ9.eyJodHRwczovL2FwaS5za2VkdWxvLmNvbS91c2VyX2lkIjoib2F1dGgyfHNmLWJhdHMtc2FuZGJveHwwMDUyRTAwMDAwSXlTZDJRQUYiLCJodHRwczovL2FwaS5za2VkdWxvLmNvbS92ZW5kb3IiOiJzYWxlc2ZvcmNlIiwiaHR0cHM6Ly9hcGkuc2tlZHVsby5jb20vdXNlcm5hbWUiOiJhZG1pbkBza2VkdWxvLmNvbS5iYXRzLnVhdCIsImh0dHBzOi8vYXBpLnNrZWR1bG8uY29tL29yZ2FuaXphdGlvbl9pZCI6IjAwRDE5MDAwMDAwOWhtckVBQSIsImh0dHBzOi8vYXBpLnNrZWR1bG8uY29tL25hbWUiOiJTa2VkdWxvIEFkbWluIiwiaHR0cHM6Ly9hcGkuc2tlZHVsby5jb20vc2ZfZW52Ijoic2FsZXNmb3JjZS1zYW5kYm94IiwiaHR0cHM6Ly9hcGkuc2tlZHVsby5jb20vcmVzb3VyY2VfaWQiOiJhMEIxOTAwMDAwOEx0aGpFQUMiLCJodHRwczovL2FwaS5za2VkdWxvLmNvbS9yb2xlcyI6WyJzY2hlZHVsZXIiLCJ1c2VyIiwiYWRtaW5pc3RyYXRvciJdLCJodHRwczovL2FwaS5za2VkdWxvLmNvbS92ZW4iOnsiY29tbXVuaXR5X2lkIjpudWxsLCJ1c2VyX2lkIjoiMDA1MkUwMDAwMEl5U2QyUUFGIn0sImlzcyI6Imh0dHBzOi8vc2tlZHVsby5hdXRoMC5jb20vIiwic3ViIjoib2F1dGgyfHNmLWJhdHMtc2FuZGJveHwwMDUyRTAwMDAwSXlTZDJRQUYiLCJhdWQiOlsiaHR0cHM6Ly9hcGkuc2tlZHVsby5jb20iLCJodHRwczovL3NrZWR1bG8uYXV0aDAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTU4NDQzNDA2NCwiZXhwIjoxNTg0NDc3MjY0LCJhenAiOiI5bUVKQzBxS0VaSW5UYThPMnVTMzBtZHdMVXlqNllySCIsInNjb3BlIjoib3BlbmlkIn0.f7wcZGn4fYZ8OzBi4YwNV-ud8T1Yn14AYRf5WrDcOVJfz-vZu3XTWxUyg6rSbUaUwT6qvLsTspqMzN2KxaY8hjLwZkPsH0W0d0hLeH_poEXEBxHT-eRV7wdx3kFnlaAhjV9YXQpOVSEQj_SH5t0KuC8Vi-NfV0XlRsBNkxywYCkW49BL-92iHQoKgaa_yHcg00KIVtS1PlNdt5D3gEiTzmGt2xHYsH8w_YjmftDB_pSWxnR4XIY9lTyvOJX6f8bCFLMbasjKuu3HFBSHZvxr7t-Ak0ob9hHBlhYksD4XBM7_VRtC8nZPkM7KVqhSKZi5RXeIPZkZneYqgyxAH_tXVg`;
+const defaultToken = `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlEwWXdOekF5UTBFME1UTXdRa05FTWpWQ05rRTVSRFUxTURoRk16TXhNa1kyTVRFelFVSkJRUSJ9.eyJodHRwczovL2FwaS5za2VkdWxvLmNvbS91c2VyX2lkIjoic2FsZXNmb3JjZS1zYW5kYm94fDAwNTZGMDAwMDA2dzFPRFFBWSIsImh0dHBzOi8vYXBpLnNrZWR1bG8uY29tL3ZlbmRvciI6InNhbGVzZm9yY2UiLCJodHRwczovL2FwaS5za2VkdWxvLmNvbS91c2VybmFtZSI6ImViYWNraG91c2VAaW5jbHVzaW9uLmNvbS5mdWxsc2IiLCJodHRwczovL2FwaS5za2VkdWxvLmNvbS9vcmdhbml6YXRpb25faWQiOiIwMEQ5RDAwMDAwMDhhUnRVQUkiLCJodHRwczovL2FwaS5za2VkdWxvLmNvbS9uYW1lIjoiU2tlZHVsbyBBZG1pbiIsImh0dHBzOi8vYXBpLnNrZWR1bG8uY29tL3NmX2VudiI6InNhbGVzZm9yY2Utc2FuZGJveCIsImh0dHBzOi8vYXBpLnNrZWR1bG8uY29tL3Jlc291cmNlX2lkIjoiYTJWNkYwMDAwMDFGVzY0VUFHIiwiaHR0cHM6Ly9hcGkuc2tlZHVsby5jb20vcm9sZXMiOlsic2NoZWR1bGVyIiwicmVzb3VyY2UiLCJhZG1pbmlzdHJhdG9yIl0sImh0dHBzOi8vYXBpLnNrZWR1bG8uY29tL3ZlbiI6eyJjb21tdW5pdHlfaWQiOm51bGwsInVzZXJfaWQiOiIwMDU2RjAwMDAwNncxT0RRQVkifSwiaXNzIjoiaHR0cHM6Ly9za2VkdWxvLmF1dGgwLmNvbS8iLCJzdWIiOiJzYWxlc2ZvcmNlLXNhbmRib3h8MDA1NkYwMDAwMDZ3MU9EUUFZIiwiYXVkIjpbImh0dHBzOi8vYXBpLnNrZWR1bG8uY29tIiwiaHR0cHM6Ly9za2VkdWxvLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE1ODQ2MDYzODUsImV4cCI6MTU4NDY0OTU4NSwiYXpwIjoiOW1FSkMwcUtFWkluVGE4TzJ1UzMwbWR3TFV5ajZZckgiLCJzY29wZSI6Im9wZW5pZCJ9.d-eDEaeimhQbbd7-AH0bJGvwer8NjK8IOuAWtZ8Mt38jNSo0hImPlcdj_8MCKpPWWRwNDj__SKFjav051wnzptgYaKdr4NO0vJaO7sxx3cOxQO7SBIKOJt3UeM51PzkOEOEIwikQTnQJWScay7qqREYgQVvpa-5kCCvuLKjB5UAEDjooIvJP2FsdLSx9NeRkh8ao5TssCFzbVpWX3snEssWOwn4yYoRKl3MAXO3nEPaVktP0ZaJOvTCfj71YcGvFz0L933w21X9oe3HiapWWmu2LeHIz3370cG_YN-OBylmeub4wQDQ2d6tdzez6HtHiwlhVQWAbK3cuSqJgA-xVqg`;
 
 const get = async (url, options) => {
   if (!!instance) {
@@ -21,8 +24,7 @@ const get = async (url, options) => {
   return null;
 }
 
-var fs = require('fs');
-var util = require('util');
+
 var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
 var log_stdout = process.stdout;
 
@@ -69,6 +71,27 @@ const getLinkDownload = async (formRevId) => {
   }).catch(e => Promise.resolve(e.request.res.responseUrl))
 }
 
+const downloadSourceFile = async (url) => {  
+  const _path = path.resolve(__dirname, 'download', 'viewSources.zip')
+  const writer = fs.createWriteStream(_path)
+
+  const response = await _axios({
+    url,
+    method: 'GET',
+    responseType: 'stream'
+  }).catch(e => {
+    console.log("Download Error")
+    return Promise.reject(e)
+  })
+
+  response.data.pipe(writer)
+
+  return new Promise((resolve, reject) => {
+    writer.on('finish', resolve)
+    writer.on('error', reject)
+  })
+}
+
 const selectForm = async (forms) => {
   const choices = _.flatten(forms
     .map(form => ({forms: form.formRev.definition.forms.map(item => ({...item, formId: form.id}))}))
@@ -95,11 +118,13 @@ const selectForm = async (forms) => {
 
   // selectForm
   const form = await selectForm(forms)
-  console.log(form.formRev.id)
   const link = await getLinkDownload(form.formRev.id)
   
+  await downloadSourceFile(link)
+    .catch(e => console.logFile(e))
+    .then(() => console.log("Download done"))
 
-  console.log("link ", link)
+  
 
   // forms.forEach(form => {
   //   echo 
