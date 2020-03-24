@@ -94,9 +94,9 @@ const downloadSourceFile = async (url) => {
 
 const selectForm = async (forms) => {
   const choices = _.flatten(forms
-    .map(form => ({forms: form.formRev.definition.forms.map(item => ({...item, formId: form.id}))}))
+    .map(form => ({forms: form.formRev.definition.forms.map(item => ({...item, formId: form.id, jobTypes: form.jobTypes}))}))
     .map(item => item.forms))
-    .map(form => `${form.formId}____${form.name}`)
+    .map(form => `${form.formId}____${form.name}${form.jobTypes.length > 0 ? (' [' + form.jobTypes.join(`, `) + ']') : ''}`)
   const answers = await inquirer.prompt([
     {
       type: 'list',
