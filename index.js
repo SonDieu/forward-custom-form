@@ -93,10 +93,33 @@ const downloadSourceFile = async (url) => {
 }
 
 const selectForm = async (forms) => {
-  const choices = _.flatten(forms
-    .map(form => ({forms: form.formRev.definition.forms.map(item => ({...item, formId: form.id, jobTypes: form.jobTypes}))}))
-    .map(item => item.forms))
-    .map(form => `${form.formId}____${form.name}${form.jobTypes.length > 0 ? (' [' + form.jobTypes.join(`, `) + ']') : ''}`)
+  const data = _.flatten(forms
+    .map(form => ({forms: form.formRev.definition.forms.map(item => ({
+      ...item, 
+      formId: form.id, 
+      jobTypes: form.jobTypes,
+      deploy: form.formRev.definition.deploy
+    }))}))
+    .map(item => item.forms));
+
+  const formatChoice = form => `${form.formId}____${form.name}${form.jobTypes.length > 0 ? (' [' + form.jobTypes.join(`, `) + ']') : ''}`
+  
+  let publishForms = [];
+  let draftForms = [];
+
+  data.forEach(item => {
+    if (item.jobTypes.length > 0 || (item.deploy && item.deploy.context === "resource")) {
+      publishForms.push(item)
+    } else {
+      draftForms.push(item)
+    }
+  })
+
+  const choices = []
+    .concat(publishForms.map(formatChoice))
+    .concat(new inquirer.Separator())
+    .concat(draftForms.map(formatChoice))
+
   const answers = await inquirer.prompt([
     {
       type: 'list',
