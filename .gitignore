@@ -2,3 +2,4 @@ node_modules/
 download/
 customform
 deploy
+.vscode/
