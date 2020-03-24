@@ -31,7 +31,7 @@ if [[ $@ ]];
         then
         rm -rf ./customform/deploy && mkdir ./customform/deploy 
         (cd customform && ./run.sh compile-deploy deploy_pkg)
-        mv ./customform/deploy/deploy_pkg.tar.gz ./deploy
+        mkdir deploy && mv ./customform/deploy/deploy_pkg.tar.gz ./deploy/deploy_pkg.tar.gz
         exit 0
     fi
 
