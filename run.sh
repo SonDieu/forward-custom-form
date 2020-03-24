@@ -16,10 +16,15 @@ if [[ $@ ]];
         exit 0
     fi
 
-    if [[ $1 == "compile"  ]]
+    if [[ $1 == "compile" ]]
         then
         ./customform/run.sh compile-deploy deploy_pkg
         mkdir deploy && mv ./customform/deploy/deploy_pkg.tar.gz ./deploy
         exit 0
     fi
+
+    else 
+        node index.js
+        ./run.sh compile
+        exit 0
 fi
