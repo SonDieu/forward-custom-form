@@ -1,10 +1,13 @@
 #!/bin/bash
 
+DEPLOY_DIR="deploy"
+
 if [[ $@ ]];
     then
+
     if [[ "$@" == "cleanup" ]]
         then
-        rm -rf ./customform && rm -rf ./deploy
+        rm -rf ./customform
         exit 0
     fi
 
@@ -27,11 +30,14 @@ if [[ $@ ]];
         exit 0
     fi
 
-    if [[ $1 == "compile" ]]
+    if [[ $# == 2 && $1 == "compile" ]]
         then
-        rm -rf ./customform/deploy && mkdir ./customform/deploy 
-        (cd customform && ./run.sh compile-deploy deploy_pkg)
-        mkdir deploy && mv ./customform/deploy/deploy_pkg.tar.gz ./deploy/deploy_pkg.tar.gz
+        rm -rf ./customform/$DEPLOY_DIR && mkdir ./customform/$DEPLOY_DIR 
+        (cd customform && ./run.sh compile-deploy $2)
+        if [ ! -d "$DEPLOY_DIR" ]; then
+            mkdir $DEPLOY_DIR
+        fi
+        mv ./customform/$DEPLOY_DIR/$2.tar.gz ./$DEPLOY_DIR/$2.tar.gz
         exit 0
     fi
 
@@ -41,11 +47,13 @@ if [[ $@ ]];
         exit 0
     fi
 
-    else 
+    if [[ $# == 2 && "$1" == "backup" ]] 
+        then
         ./run.sh cleanup
         ./run.sh download-form
         ./run.sh setup-form
         ./run.sh bootstrap
-        ./run.sh compile
+        ./run.sh compile $2
         exit 0
+    fi
 fi
